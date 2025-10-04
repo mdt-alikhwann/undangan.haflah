@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Undangan Haflah & Wisuda</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:wght@400;600&family=Merriweather:wght@400;700&family=Poppins:wght@400;600&family=Alan+Sans:wght@300..900&family=Amiri&display=swap" rel="stylesheet">
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0 auto;
+        font-family: 'Alan Sans', serif;
+        overflow: hidden;
+        position: relative;
+        max-width: 470px;
+      }
+
+/* ===== Tirai ===== */
+.curtain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.curtain img {
+  width: 50%;
+  height: 100%;  /* biar nutup full tinggi layar */
+  object-fit: fit;
+}
+
+/* Panel kiri */
+.curtain-left {
+  flex: 1;
+  transition: transform 1.2s ease-in-out;
+}
+
+/* Panel kanan (mirror) */
+.curtain-right {
+  flex: 1;
+  transition: transform 1.2s ease-in-out;
+  transform: scaleX(-1);
+}
+
+/* Saat terbuka */
+.curtain.open .curtain-left {
+  transform: translateX(-100%);
+}
+
+.curtain.open .curtain-right {
+  transform: translateX(100%) scaleX(-1);
+}
+
+
+      /* Slides container */
+      .slides {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Background fix di sini */
+      .slides::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("bg.webp");
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        opacity: 0.5;
+        z-index: 0;
+        /* tetap di bawah konten */
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        /* default: hilang */
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+        text-align: center;
+        opacity: 0;
+        transform: scale(1.05);
+        transition: opacity 0.6s ease, transform 0.8s ease;
+        will-change: opacity, transform;
+        z-index: 0;
+        /* non aktif tetap paling bawah */
+      }
+
+      .slide.active {
+        opacity: 1;
+        transform: scale(1);
+        z-index: 2;
+        /* hanya slide aktif yang nongol di atas */
+      }
+
+      .mdt-btn {
+        padding: 12px 22px;
+        font-size: 13px;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(145deg, #4d3700, #a97900);
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        text-decoration: none;
+        font-family: 'Alan Sans', serif;
+      }
+
+      /* navbot (bottom) */
+      .navbot-wrap {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 17px;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        z-index: 40;
+        max-width: 80%;
+      }
+
+      .navbot {
+        pointer-events: all;
+        display: flex;
+        gap: 12px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(5px);
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        align-items: center;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity .32s ease, transform .32s ease;
+      }
+
+      .navbot.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .navbot-btn {
+        min-width: 64px;
+        height: 56px;
+        border-radius: 12px;
+        border: none;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--primary);
+        padding: 6px 10px;
+        flex: 0 0 auto;
+      }
+
+      .navbot-btn i {
+        font-size: 17px;
+        margin-bottom: -7px;
+      }
+
+      .navbot-btn.active {
+        color: #fff;
+        font-weight: 400;
+        background: linear-gradient(145deg, #003b00, #585000);
+        box-shadow: 0 6px 14px rgba(185, 130, 20, 0.18);
+      }
+
+      /* hide by default */
+      .hidden {
+        display: none !important;
+      }
+
+      /* small responsive tweaks */
+      @media (max-width:420px) {
+        .navbot-btn {
+          min-width: 54px;
+          height: 48px;
+          font-size: 11px;
+        }
+
+        .mdt-btn {
+          font-size: 13px;
+          padding: 10px 18px;
+        }
+      }
+
+/* ===================== Animations ===================== */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: var(--mirror, scale(1)) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: var(--mirror, scale(1)) translateY(0);
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: var(--mirror, scale(1)) translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: var(--mirror, scale(1)) translateY(0);
+  }
+}
+
+/* ===================== Base Class ===================== */
+.fade-up   { animation: fadeUp 1s ease forwards; }
+.fade-down { animation: fadeDown 1s ease forwards; }
+
+/* ===================== Duration Helpers ===================== */
+.duration-1 { animation-duration: 1s !important; }
+.duration-2 { animation-duration: 2s !important; }
+.duration-3 { animation-duration: 3s !important; }
+.duration-4 { animation-duration: 4s !important; }
+.duration-5 { animation-duration: 5s !important; }
+
+/* ===================== Corner ===================== */
+.corner {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Mirror pakai variable */
+.pojok-atas-kiri   { top: 0; left: 0; --mirror: scale(1,1); }
+.pojok-atas-kanan  { top: 0; right: 0; --mirror: scale(-1,1); }
+.pojok-bawah-kiri  { bottom: 0; left: 0; --mirror: scale(1,-1); }
+.pojok-bawah-kanan { bottom: 0; right: 0; --mirror: scale(-1,-1); }
+
+
+      #leaf-wrapper {
+        position: fixed;
+        /* agar bebas dari scroll/slides */
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        overflow: visible;
+        /* biar daun jatuh tanpa terpotong */
+        z-index: 999;
+        /* di atas slide, tapi di bawah navbot */
+      }
+
+      /* Daun terbang */
+      .leaf {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background-image: url('daun.webp');
+        /* ganti gambar daun */
+        background-size: cover;
+        opacity: 0.8;
+        pointer-events: none;
+        transform-style: preserve-3d;
+      }
+
+      /* Keyframes jatuh daun + rotasi 3D */
+      @keyframes fall3D {
+        0% {
+          transform: translateY(-50px) translateX(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+          opacity: 0.6;
+        }
+
+        25% {
+          transform: translateY(25vh) translateX(20px) rotateX(60deg) rotateY(45deg) rotateZ(30deg);
+          opacity: 0.5;
+        }
+
+        50% {
+          transform: translateY(50vh) translateX(-20px) rotateX(120deg) rotateY(90deg) rotateZ(60deg);
+          opacity: 0.4;
+        }
+
+        75% {
+          transform: translateY(75vh) translateX(15px) rotateX(180deg) rotateY(135deg) rotateZ(90deg);
+          opacity: 0.3;
+        }
+
+        100% {
+          transform: translateY(100vh) translateX(0) rotateX(240deg) rotateY(180deg) rotateZ(120deg);
+          opacity: 0.1;
+        }
+      }
+
+      /* ===== Loading Screen ===== */
+      #loading {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1021;
+        transition: opacity 0.8s ease, visibility 0.8s ease;
+      }
+
+      #loading.fade-out {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      #loading p {
+        font-style: italic;
+      }
+
+      .progress-container {
+        width: 200px;
+        height: 4px;
+        background: #eee;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        width: 0;
+        height: 100%;
+        background: var(--secondary);
+        animation: loadBar 2s forwards;
+      }
+
+      @keyframes loadBar {
+        from {
+          width: 0;
+        }
+
+        to {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+      <!-- Ikon Musik langsung -->
+  <i id="musicBtn" class="bi bi-play-fill"></i>
+
+  <!-- Audio -->
+  <audio id="bgMusic" src="bg-music.mp3" loop></audio>
+    <!-- Loading Screen -->
+    <div id="loading">
+      <p>Memuat undangan...</p>
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+    <div id="leaf-wrapper"></div>
+<!-- Tirai -->
+<div id="curtain" class="curtain">
+  <img src="pintu.webp" class="curtain-left curtain-kiri">
+  <img src="pintu.webp" class="curtain-right curtain-kanan">
+</div>
+
+    <!-- Slides -->
+    <div id="slides" class="slides">
+      <!-- =================================================================== -->
+      <section class="slide" data-index="0">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <div class="latin display-1 mb-3 fade-down duration-5 primary">Undangan Haflah</div>
+        <p class="font-sedang alan secondary fade-down duration-5">Akhirussanah & Wisuda Santri Angkatan VII Madrasah Diniyah Takmiliyah Al-Ikhwan Margasari, Sidareja</p>
+        <div id="countdown" class="d-flex justify-content-center gap-2 mb-4"></div>
+        <div class="container-blur py-2 px-5 mx-2 font-normal primary fade-up duration-5">Kepada Yth. <br>Bpk/Ibu/Saudara/i <br>
+          <span id="namatamu" class="font-sedang alan text-capitalize primary fw-bold fade-up duration-5">Tamu Undangan</span>
+        </div>
+        <a href="#salam" id="openBtn" class="mdt-btn mt-4 fade-up duration-5">
+          <i class="bi bi-envelope-open me-2"></i>Buka Undangan </a>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="1" aria-label="Undangan Akhirussanah & Wisuda">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <span class="amiri primary inline-block mb-3 font-besar fade-down duration-2">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</span>
+        <span class="latin fw-bold font-besar fade-up duration-1">Assalamu’alaikum Warahmatullahi Wabarakatuh</span>
+        <span class="alan font-sedang inline-block my-2 text-start fade-up duration-2" style="text-indent: 1em;">Dengan memohon rahmat serta ridha Allah ﷻ, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara sebagai berikut:</span>
+        <div>
+          <table class="acara-table">
+            <tbody class="text-start alan font-sedang">
+              <tr class=" fade-up duration-2">
+                <td>
+                  <strong>Acara</strong>
+                </td>
+                <td class="colon">:</td>
+                <td>Akhirussanah & Wisuda Santri MDT Al-Ikhwan</td>
+              </tr>
+              <tr class=" fade-up duration-3">
+                <td>
+                  <strong>Hari/Tgl</strong>
+                </td>
+                <td class="colon">:</td>
+                <td>Minggu, 21 Mei 2026</td>
+              </tr>
+              <tr class=" fade-up duration-3">
+                <td>
+                  <strong>Tempat</strong>
+                </td>
+                <td class="colon">:</td>
+                <td>Masjid Al-Istiqomah Kandang Banteng</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="fade-up duration-4 font-sedang inline-block text-start mt-2" style="text-indent: 1em;">Acara ini sebagai bentuk syukur atas berakhirnya masa belajar serta penghargaan bagi para santri yang telah menyelesaikan pendidikannya.</span>
+        <span class="fade-up duration-5 font-sedang inline-block text-start my-2" style="text-indent: 1em;">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu untuk para santri.</span>
+        <span class="latin fw-bold font-besar fade-up duration-5">Wassalamu’alaikum Warahmatullahi Wabarakatuh</span>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="2">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <section id="rundown" class="container my-5">
+          <p class="text-center mb-4 latin display-4 primary fade-down duration-4">Rangkaian Acara</p>
+          <div class="timeline container-section-overflow">
+            <div class="timeline-item fade-up duration-1">
+              <div class="time">07.30</div>
+              <div class="content">
+                <h6>Registrasi Tamu</h6>
+                <p class="font-sedang abu">Panitia</p>
+              </div>
+            </div>
+            <hr class="hr">
+            <!-- GARIS -->
+            <div class="timeline-item fade-up duration-2">
+              <div class="time">07.30</div>
+              <div class="content">
+                <h6>Registrasi Tamu</h6>
+                <p class="font-sedang abu">Panitia</p>
+              </div>
+            </div>
+            <hr class="hr">
+            <!-- GARIS -->
+            <div class="timeline-item fade-up duration-3">
+              <div class="time">07.30</div>
+              <div class="content">
+                <h6>Registrasi Tamu</h6>
+                <p class="font-sedang abu">Panitia</p>
+              </div>
+            </div>
+            <hr class="hr">
+            <!-- GARIS -->
+            <div class="timeline-item fade-up duration-4">
+              <div class="time">07.30</div>
+              <div class="content">
+                <h6>Registrasi Tamu</h6>
+                <p class="font-sedang abu">Panitia</p>
+              </div>
+            </div>
+            <hr class="hr">
+            <!-- GARIS -->
+            <div class="timeline-item fade-up duration-5">
+              <div class="time">07.30</div>
+              <div class="content">
+                <h6>Registrasi Tamu</h6>
+                <p class="font-sedang abu">Panitia</p>
+              </div>
+            </div>
+            <hr class="hr">
+            <!-- GARIS -->
+            <!-- Tambah item lain -->
+          </div>
+        </section>
+        <style>
+          .timeline {
+            position: relative;
+            margin: 20px auto;
+            padding-left: 30px;
+            border-left: 2px solid var(--primary);
+            /* garis biru */
+          }
+
+          .timeline-item {
+            margin-bottom: 20px;
+            position: relative;
+          }
+
+          .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -9px;
+            top: 5px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--secondary);
+          }
+
+          .timeline .time {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 3px;
+            font-size: 16px;
+          }
+
+          .timeline .content h6 {
+            margin: 0;
+            font-size: 14px;
+            display: inline-block;
+          }
+
+          #rundown small {
+            color: #666;
+            font-size: 14px;
+            display: inline-block;
+          }
+        </style>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="3">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <section id="lokasi" class="">
+          <div class="container text-center">
+            <h2 class="mb-4 latin display-4 primary fade-down duration-4">Lokasi Acara</h2>
+            <p class="secondary font-sedang fade-up duration-2">Masjid Al-Istiqomah Kandang Banteng</p>
+            <!-- Map Embed -->
+            <div class="w-100 rounded rounded-2 shadow mb-4 fade-up duration-3">
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15824.588405452441!2d108.74821665!3d-7.4489728500000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e658161608ff231%3A0x15cdd515bbcc8059!2sMasjid%20Al-Istiqomah%20Kandang%20Banteng!5e0!3m2!1sid!2sid!4v1759346172303!5m2!1sid!2sid" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <!-- Button -->
+            <a href="https://maps.app.goo.gl/z4fnXFZGwS3w2QCi7" target="_blank" class="mdt-btn fade-up duration-4 d-inline-block">
+              <i class="bi bi-geo-fill"></i> Petunjuk Arah </a>
+          </div>
+        </section>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="4">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <!-- SECTION INFAQ -->
+        <section id="infaq" class="container-section-overflow">
+          <div class="container">
+            <h2 class="mb-4 latin display-4 primary fade-down duration-5">Infaq & Shodaqoh</h2>
+            <p class="secondary font-sedang mb-2 fade-up duration-2"> Kalau berkenan, silakan berdonasi untuk kelancaran acara. Sedikit dari banyak orang, insyaAllah jadi berkah. 😊 Alhamdulillah saat ini sudah terkumpul <span id="totalInfaq"></span> </p>
+            <div>
+              <button type="button" class="btn btn-outline-success fade-up duration-3 font-normal my-0" data-bs-toggle="modal" data-bs-target="#rekening">
+                <i class="bi bi-wallet-fill"></i> Lihat No. Rekening </button>
+              <button type="button" class="btn btn-outline-dark fade-up duration-4 font-normal my-0" data-bs-toggle="modal" data-bs-target="#qris">
+                <i class="bi bi-qr-code"></i> Lihat kode QRIS </button>
+            </div>
+            <p class="text-center secondary font-sedang mt-3 fade-up duration-4"> Terima kasih atas dukungannya, semoga Allah membalas kebaikan dengan berlipat ganda. 🤲 </p>
+          <button class="mdt-btn font-normal mb-3 fade-up duration-5" data-bs-toggle="modal" data-bs-target="#konfirmasiModal">
+            <i class="bi bi-check2-circle"></i> Konfirmasi ke Panitia </button>
+          </div>
+          <div id="konfirmasiList" class="my-4 fade-up duration-5"></div>
+        </section>
+      </section>
+      <!-- Modal qris-->
+      <div class="modal fade" id="qris" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title font-besar primary" id="exampleModalLabel">Kode QRIS Panitia</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+              <p class="font-sedang abu mb-3">Scan kode dibawah ini menggunakan M-Banking atau E-Wallet Kesayangan Anda</p>
+              <div>
+                <img style="width: 65%; height: auto;" src="qris.webp" alt="">
+              </div>
+              <p class="abu fst-italic font-normal mt-2 text-start">* Nominal bebas minimal Rp 1</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-sm btn-secondary font-sedang" data-bs-dismiss="modal">Kembali ke Undangan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- modal rekening -->
+      <div class="modal fade" id="rekening" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title font-besar primary" id="exampleModalLabel">Nomor Rekening Panitia</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3">
+                <!-- Rekening 1 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                      <img class="potorek" src="https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" alt="">
+                      <p class="mb-1 font-sedang">a.n. Yayasan Al-Ikhwan</p>
+                      <p class="h5 fw-bold font-sedang">1234567890</p>
+                      <button class="btn btn-outline-secondary btn-sm font-normal"> Salin Nomor </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Rekening 1 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                      <img class="potorek" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD55a8Qe28T83fYzjQYN1OynHljfAcP0Fy1Q&s" alt="">
+                      <p class="mb-1 font-sedang">a.n. Yayasan Al-Ikhwan</p>
+                      <p class="h5 fw-bold font-sedang">1234567890</p>
+                      <button class="btn btn-outline-secondary btn-sm font-normal"> Salin Nomor </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Rekening 1 -->
+                <div class="col-12 col-md-6 col-lg-4">
+                  <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                      <img class="potorek" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/SeaBank.svg/1200px-SeaBank.svg.png" alt="">
+                      <p class="mb-1 font-sedang">a.n. Yayasan Al-Ikhwan</p>
+                      <p class="h5 fw-bold font-sedang">1234567890</p>
+                      <button class="btn btn-outline-secondary btn-sm font-normal"> Salin Nomor </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-sm btn-secondary font-sedang" data-bs-dismiss="modal">Kembali ke Undangan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+        <!-- Modal konfirmasi -->
+      <section class="modal fade" id="konfirmasiModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content rounded-4 shadow-lg">
+            <div class="modal-header border-0">
+              <h5 class="modal-title fw-bold font-besar">Konfirmasi Infaq/ Shodaqoh</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <form id="konfirmasiForm">
+                <div class="mb-1">
+                  <label class="form-label abu font-sedang">Nama (Boleh dikosongkan)</label>
+                  <input type="text" id="munfiq" class="form-control">
+                </div>
+                <div class="my-2">
+                  <label class="form-label abu font-sedang">Bank Tujuan</label>
+                  <select id="banktujuan" class="form-select abu font-sedang" required>
+                    <option value="">-- Pilih --</option>
+                    <option value="BRI">BRI</option>
+                    <option value="BCA">BCA</option>
+                    <option value="QRIS">QRIS</option>
+                    <option value="Seabank">Seabank</option>
+                  </select>
+                </div>
+                <div class="mb-1">
+                  <label class="form-label abu font-sedang">Nominal Infaq/ Shodaqoh</label>
+                  <input type="number" id="nominal" class="form-control" rows="3" required></input>
+                </div>
+                <div class="text-end mt-3">
+                  <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-whatsapp me-1"></i> Konfirmasi sekarang</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="5">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <div class="container-section-overflow">
+          <h2 class="mb-4 latin display-4 primary fade-down duration-4">Doa & ucapan</h2>
+          <p class="secondary font-sedang fade-down duration-3">Silakan isi konfirmasi kehadiran Anda</p>
+          <button class="mdt-btn fade-up duration-4" data-bs-toggle="modal" data-bs-target="#rsvpModal">
+            <i class="bi bi-pencil-fill me-1"></i> Posting Ucapan</button>
+            <div id="rsvpSummary" class="font-normal text-center my-2 primary mt-5 fade-up duration-3"></div>
+          <div id="rsvpList" class="row g-2 justify-content-center mb-4 pb-3 rounded"></div>
+        </div>
+      </section>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="6">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <section id="galeri" class="container-section-overflow">
+          <div class="container">
+            <h2 class="text-center mb-4 latin display-3 primary fade-down duration-4">Dokumentasi & Galeri</h2>
+            <p class="font-sedang secondary mb-3 fade-down duration-3">Momen indah tak terlupakan</p>
+            <div class="row g-3">
+              <!-- Foto 1 -->
+              <div class="col-6 col-md-4 fade-up duration-1">
+                <a href="https://picsum.photos/800/600?random=1" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=1">
+                  <img src="https://picsum.photos/400/300?random=1" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 1">
+                </a>
+              </div>
+              <!-- Foto 2 -->
+              <div class="col-6 col-md-4 fade-up duration-2">
+                <a href="https://picsum.photos/800/600?random=2" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=2">
+                  <img src="https://picsum.photos/400/300?random=2" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 2">
+                </a>
+              </div>
+              <!-- Foto 3 -->
+              <div class="col-6 col-md-4 fade-up duration-3">
+                <a href="https://picsum.photos/800/600?random=3" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=3">
+                  <img src="https://picsum.photos/400/300?random=3" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 3">
+                </a>
+              </div>
+              <!-- Foto 1 -->
+              <div class="col-6 col-md-4 fade-up duration-4">
+                <a href="https://picsum.photos/800/600?random=1" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=4">
+                  <img src="https://picsum.photos/400/300?random=1" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 1">
+                </a>
+              </div>
+              <!-- Foto 2 -->
+              <div class="col-6 col-md-4 fade-up duration-5">
+                <a href="https://picsum.photos/800/600?random=2" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=5">
+                  <img src="https://picsum.photos/400/300?random=2" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 2">
+                </a>
+              </div>
+              <!-- Foto 3 -->
+              <div class="col-6 col-md-4 fade-up duration-1">
+                <a href="https://picsum.photos/800/600?random=3" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=6">
+                  <img src="https://picsum.photos/400/300?random=3" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 3">
+                </a>
+              </div>
+              <!-- Foto 1 -->
+              <div class="col-6 col-md-4 fade-up duration-2">
+                <a href="https://picsum.photos/800/600?random=1" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=7">
+                  <img src="https://picsum.photos/400/300?random=1" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 1">
+                </a>
+              </div>
+              <!-- Foto 2 -->
+              <div class="col-6 col-md-4 fade-up duration-3">
+                <a href="https://picsum.photos/800/600?random=2" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=8">
+                  <img src="https://picsum.photos/400/300?random=2" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 2">
+                </a>
+              </div>
+              <!-- Foto 3 -->
+              <div class="col-6 col-md-4 fade-up duration-4">
+                <a href="https://picsum.photos/800/600?random=3" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=9">
+                  <img src="https://picsum.photos/400/300?random=3" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 3">
+                </a>
+              </div>
+              <!-- Foto 3 -->
+              <div class="col-6 col-md-4 fade-up duration-5">
+                <a href="https://picsum.photos/800/600?random=3" data-bs-toggle="modal" data-bs-target="#lightboxModal" data-img="https://picsum.photos/800/600?random=10">
+                  <img src="https://picsum.photos/400/300?random=3" class="img-fluid rounded shadow-sm gallery-thumb" alt="Galeri 3">
+                </a>
+              </div>
+              <!-- Tambah foto lain sesuai kebutuhan -->
+            </div>
+          </div>
+        </section>
+      </section>
+              <!-- ===== MODAL LIGHTBOX ===== -->
+        <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0 shadow-none text-center">
+              <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg" alt="Galeri Full">
+              <div class="mt-3">
+                <button type="button" class="btn btn-light px-4 rounded-pill shadow-sm font-sedang" data-bs-dismiss="modal">
+                  <i class="bi bi-x-lg me-1 text-dark"></i> Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      <!-- =================================================================== -->
+      <section class="slide" data-index="7">
+        <img src="corner.webp" class="corner pojok-atas-kiri fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-atas-kanan fade-down duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kiri fade-up duration-5">
+        <img src="corner.webp" class="corner pojok-bawah-kanan fade-up duration-5">
+        <!-- Section Kontak & Terima Kasih -->
+        <section id="kontak">
+          <div class="container container-section-overflow">
+            <div class="row align-items-center g-4">
+
+              <!-- Kolom Kontak -->
+              <div class="col-md-6">
+                <h3 class="mb-4 display-3 latin primary fade-down duration-4">Kontak Panitia</h3>
+                <p class="secondary mb-3 font-sedang fade-down duration-3">Untuk informasi lebih lanjut silakan hubungi kami melalui:</p>
+                <ul class="list-unstyled">
+                  <li class="mb-3 d-flex align-items-center font-sedang secondary text-end fade-up duration-2">
+                    <span class="btn btn-dark btn-sm rounded-circle me-3 shadow-sm">
+                      <i class="bi bi-telephone-fill text-white"></i>
+                    </span>
+                    <a href="tel:+6285156850068" class="text-decoration-none secondary font-sedang">+62 851-5685-0068</a>
+                  </li>
+                  <li class="mb-3 d-flex align-items-center fade-up duration-3">
+                    <span class="btn btn-success btn-sm rounded-circle me-3 shadow-sm font-sedang secondary">
+                      <i class="bi bi-whatsapp text-white"></i>
+                    </span>
+                    <a href="https://wa.me/6285156850068" target="_blank" class="text-decoration-none font-sedang secondary">Chat WhatsApp</a>
+                  </li>
+                  <li class="mb-3 d-flex align-items-center text-start fade-up duration-4">
+                    <span class="btn btn-info btn-sm rounded-circle me-3 shadow-sm font-sedang secondary">
+                      <i class="bi bi-geo-alt-fill text-white"></i>
+                    </span>
+                    <span class="secondary font-sedang">Jl. jalan tg margasari jgn lupa pulangnya beli lapis</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Kolom Terima Kasih -->
+              <div class="col-md-6 text-center">
+                <h3 class="fade-up duration-5 mb-3 primary display-3 latin">Terima Kasih</h3>
+                <p class="secondary mb-3 font-sedang fade-up duration-4">
+                  Atas doa, dukungan, dan kehadiran Bapak/Ibu/Saudara/i, kami ucapkan
+                  terima kasih yang sebesar-besarnya. Semoga Allah SWT membalas segala kebaikan
+                  dengan pahala yang berlipat ganda.
+                </p>
+                <div class="fst-italic secondary font-sedang">
+                  Wassalamu’alaikum warahmatullahi wabarakatuh
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer kecil -->
+            <div class="text-center mt-5">
+              <small class="abu font-normal">© 2025 Haflah MDT Al-Ikhwan</small>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+    <!-- navbot -->
+    <div class="navbot-wrap">
+      <div id="navbot" class="navbot hidden" aria-hidden="true">
+        <button class="navbot-btn alan" data-target="1">
+          <i class="bi bi-envelope"></i>
+          <div style="font-size:11px;">Undangan</div>
+        </button>
+        <button class="navbot-btn alan" data-target="2">
+          <i class="bi bi-calendar-event"></i>
+          <div style="font-size:11px;">Acara</div>
+        </button>
+        <button class="navbot-btn alan" data-target="3">
+          <i class="bi bi-geo-alt"></i>
+          <div style="font-size:11px;">Lokasi</div>
+        </button>
+        <button class="navbot-btn alan" data-target="4">
+          <i class="bi bi-heart"></i>
+          <div style="font-size:11px;">Infaq</div>
+        </button>
+        <button class="navbot-btn alan" data-target="5">
+          <i class="bi bi-check2-circle"></i>
+          <div style="font-size:11px;">RSVP</div>
+        </button>
+        <button class="navbot-btn alan" data-target="6">
+          <i class="bi bi-images"></i>
+          <div style="font-size:11px;">Galeri</div>
+        </button>
+        <button class="navbot-btn alan" data-target="7">
+          <i class="bi bi-emoji-smile"></i>
+          <div style="font-size:11px;">Thanks</div>
+        </button>
+      </div>
+    </div>
+    <!-- Modal RSVP -->
+    <section class="modal fade" id="rsvpModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg">
+          <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold font-besar">Kirim Ucapan & Doa Terbaik</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="rsvpForm">
+              <div class="mb-1">
+                <label class="form-label abu font-sedang">Nama</label>
+                <input type="text" id="nama" class="form-control" required>
+              </div>
+              <!-- Jenis Kelamin -->
+              <div class="mb-1">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="jenisKelamin" id="laki" value="laki" required>
+                  <label class="form-check-label  abu font-sedang" for="laki">Laki-laki</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="jenisKelamin" id="perempuan" value="perempuan" required>
+                  <label class="form-check-label abu font-sedang" for="perempuan">Perempuan</label>
+                </div>
+              </div>
+              <div class="my-2">
+                <label class="form-label abu font-sedang">Konfirmasi Kehadiran</label>
+                <select id="status" class="form-select abu font-sedang" required>
+                  <option value="">-- Pilih --</option>
+                  <option value="hadir">Hadir</option>
+                  <option value="tidak hadir">Tidak Hadir</option>
+                  <option value="masih bingung">Masih Bingung</option>
+                  <option value="insya Allah">Insya Allah</option>
+                </select>
+              </div>
+              <div class="mb-1">
+                <label class="form-label abu font-sedang">Ucapan & Doa</label>
+                <textarea id="ucapan" class="form-control" rows="3"></textarea>
+              </div>
+              <div class="text-end mt-3">
+                <button type="submit" class="btn btn-success btn-sm">
+                  <i class="bi bi-send me-1"></i> Kirim ucapan </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- modal komentar -->
+    <section class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+          <div class="modal-body">
+            <form id="replyForm">
+              <div class="mb-1">
+                <textarea id="replyText" class="form-control" rows="3" placeholder="Ketik balasan Anda disini"></textarea>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-align-center mt-3">
+                <button id="btn-activate" type="button" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi bi-lock-fill"></i> Aktifkan tombol </button>
+                <button id="btn-reply" type="submit" class="btn btn-success btn-sm disabled">
+                  <i class="bi bi-send"></i> Kirim balasan </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1️⃣ Tampilkan loading dulu selama 3 detik
+        setTimeout(() => {
+          const loading = document.getElementById("loading");
+          loading.classList.add("fade-out");
+          // 2️⃣ Setelah fade-out loading selesai
+          setTimeout(() => {
+            loading.style.display = "none";
+            const curtain = document.getElementById('curtain');
+            curtain.style.display = 'flex'; // tampilkan curtain (sesuai CSS)
+            // beri browser kesempatan untuk render curtain sebelum animasi
+            requestAnimationFrame(() => {
+              curtain.classList.add('open');
+            });
+            // 3️⃣ Sembunyikan curtain setelah animasi selesai (1.2s)
+            setTimeout(() => {
+              curtain.style.display = 'none';
+            }, 1200);
+          }, 500); // durasi fade-out loading
+        }, 1700); // durasi loading tampil
+        // ambil query parameter dari URL
+        const params = new URLSearchParams(window.location.search);
+        // ambil parameter nama
+        const namaTamu = params.get("nama");
+        // ganti isi span kalau ada nama
+        if (namaTamu) {
+          document.getElementById("namatamu").textContent = namaTamu;
+        }
+      });
+    </script>
+    <script>
+  // ==========================================================
+// 🔹 Countdown Timer Elegan
+// ==========================================================
+
+// Ganti dengan tanggal hajatan
+const targetDate = new Date("2026-01-10T08:00:00").getTime(); 
+
+function updateCountdown() {
+  const now = new Date().getTime();
+  let distance = targetDate - now;
+
+  if (distance < 0) {
+    document.getElementById("countdown").innerHTML = 
+      "<span class='fw-bold text-success'>Acara telah dimulai 🎉</span>";
+    return;
+  }
+
+  let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  let html = "";
+
+  if (days > 0) {
+    html += `
+      <div class="count-box">
+        <div class="count-number">${days}</div>
+        <div class="count-label">Hari</div>
+      </div>`;
+  }
+
+  html += `
+    <div class="count-box">
+      <div class="count-number">${hours}</div>
+      <div class="count-label">Jam</div>
+    </div>
+    <div class="count-box">
+      <div class="count-number">${minutes}</div>
+      <div class="count-label">Menit</div>
+    </div>
+    <div class="count-box">
+      <div class="count-number">${seconds}</div>
+      <div class="count-label">Detik</div>
+    </div>`;
+
+  document.getElementById("countdown").innerHTML = html;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+</script>
+
+<script>
+  const musicBtn = document.getElementById("musicBtn");
+  const openBtn = document.getElementById("openBtn");
+  const music = document.getElementById("bgMusic");
+  let isPlaying = false;
+
+  // Fungsi toggle musik
+  function toggleMusic() {
+    if (isPlaying) {
+      music.pause();
+      musicBtn.className = "bi bi-play-fill";
+    } else {
+      music.play();
+      musicBtn.className = "bi bi-disc-fill spin";
+    }
+    isPlaying = !isPlaying;
+  }
+
+  // klik tombol musik
+  musicBtn.addEventListener("click", toggleMusic);
+
+  // klik tombol open juga trigger musik
+  openBtn.addEventListener("click", () => {
+    toggleMusic();
+    // kalau mau tombol musik baru muncul setelah open ditekan
+    musicBtn.style.display = "inline-block";
+  });
+
+  // awalnya tombol musik bisa disembunyikan
+  musicBtn.style.display = "none";
+</script>
+
+
+    <script>
+      const btnActivate = document.getElementById("btn-activate");
+      const btnReply = document.getElementById("btn-reply");
+      // sandi disimpan di JS
+      const PASSWORD = "bulanrajab"; // <-- ganti sesuai keinginan
+      btnActivate.addEventListener("click", () => {
+        const input = prompt("Masukkan sandi untuk mengaktifkan tombol:");
+        if (input === PASSWORD) {
+          // aktifkan tombol reply
+          btnReply.classList.remove("disabled");
+          btnReply.removeAttribute("disabled");
+          // ubah tampilan tombol activate
+          btnActivate.innerHTML = `
+																					<i class="bi bi-unlock-fill"></i> Tombol aktif`;
+          btnActivate.classList.replace("btn-outline-secondary", "btn-outline-success");
+          btnActivate.setAttribute("disabled", true); // biar ngga bisa ditekan lagi
+        } else {
+          alert("Sandi salah, coba lagi!");
+        }
+      });
+    </script>
+    <script defer>
+  // Event delegation untuk lightbox
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-bs-target='#lightboxModal']")) {
+      const imgSrc = e.target.closest("a").getAttribute("data-img");
+      document.getElementById("lightboxImage").src = imgSrc;
+    }
+  });
+</script>
+    <!-- Firebase SDK -->
+    <script type="module" src="script.js"></script>
+    <script>
+      (function() {
+        const slideEls = Array.from(document.querySelectorAll('.slide'));
+        const openBtn = document.getElementById('openBtn');
+        const navbot = document.getElementById('navbot');
+        const navbotBtns = Array.from(navbot.querySelectorAll('.navbot-btn'));
+        const total = slideEls.length;
+        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        let currentIndex = 0;
+
+        function goTo(index) {
+          index = parseInt(index, 10);
+          currentIndex = index;
+          slideEls.forEach(s => {
+            const isActive = parseInt(s.dataset.index, 10) === index;
+            if (isActive) {
+              // tampilkan dulu supaya transisi bisa berjalan
+              s.style.display = "flex";
+              requestAnimationFrame(() => s.classList.add("active"));
+            } else {
+              if (s.classList.contains("active")) {
+                s.classList.remove("active");
+                s.style.display = "none"; // langsung sembunyikan tanpa menunggu
+              } else {
+                s.style.display = "none"; // pastikan slide non-aktif lainnya juga tersembunyi
+              }
+            }
+          });
+          // update navbot
+          navbotBtns.forEach(btn => {
+            const target = parseInt(btn.dataset.target, 10);
+            btn.classList.toggle('active', target === index);
+          });
+          // center scroll navbot
+          if (!navbot.classList.contains('hidden')) {
+            const activeBtn = navbotBtns.find(b => parseInt(b.dataset.target, 10) === index);
+            if (activeBtn) centernavbotButton(activeBtn);
+          }
+        }
+
+        function centernavbotButton(btn) {
+          const navbotRect = navbot.getBoundingClientRect();
+          const btnRect = btn.getBoundingClientRect();
+          const btnLeftWithinnavbot = btn.offsetLeft;
+          const offset = btnLeftWithinnavbot - (navbot.clientWidth / 2 - btnRect.width / 2);
+          const maxLeft = navbot.scrollWidth - navbot.clientWidth;
+          const left = clamp(offset, 0, Math.max(0, maxLeft));
+          navbot.scrollTo({
+            left,
+            behavior: 'smooth'
+          });
+        }
+        // tombol buka
+        openBtn.addEventListener('click', () => {
+          // Panggil fullscreen
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            /* Safari */
+            document.documentElement.webkitRequestFullscreen();
+          } else if (document.documentElement.msRequestFullscreen) {
+            /* IE11 */
+            document.documentElement.msRequestFullscreen();
+          }
+          navbot.classList.remove('hidden');
+          navbot.classList.add('visible');
+          navbot.setAttribute('aria-hidden', 'false');
+          openBtn.style.display = 'none';
+          goTo(1);
+        });
+        // tombol navbot
+        navbotBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const target = parseInt(btn.dataset.target, 10);
+            goTo(target);
+          });
+        });
+        // init
+        goTo(0);
+        navbot.classList.add('hidden');
+        navbot.classList.remove('visible');
+        navbot.setAttribute('aria-hidden', 'true');
+        // panah keyboard
+        document.addEventListener('keydown', (e) => {
+          if (navbot.classList.contains('hidden')) return;
+          if (e.key === 'ArrowRight') {
+            const next = clamp(currentIndex + 1, 1, total - 1);
+            goTo(next);
+          } else if (e.key === 'ArrowLeft') {
+            const prev = clamp(currentIndex - 1, 1, total - 1);
+            goTo(prev);
+          }
+        });
+        // ✅ scroll untuk ganti slide
+        // let lastScroll = 0;
+        // window.addEventListener('wheel', (e) => {
+        //   if (navbot.classList.contains('hidden')) return; // kalau navbot belum tampil, jangan jalan
+        //   const now = Date.now();
+        //   if (now - lastScroll < 800) return; // kasih delay biar ga spam
+        //   if (e.deltaY > 0) {
+        //     // scroll ke bawah → slide berikutnya
+        //     const next = clamp(currentIndex + 1, 1, total - 1);
+        //     goTo(next);
+        //   } else {
+        //     // scroll ke atas → slide sebelumnya
+        //     const prev = clamp(currentIndex - 1, 1, total - 1);
+        //     goTo(prev);
+        //   }
+        //   lastScroll = now;
+        // });
+        // // ✅ auto slide setiap 10 detik
+        // setInterval(() => {
+        //   if (navbot.classList.contains('hidden')) return; // hanya jalan kalau navbot sudah tampil
+        //   const next = currentIndex + 1;
+        //   if (next >= total) {
+        //     goTo(1); // balik ke awal (slide pertama setelah cover)
+        //   } else {
+        //     goTo(next);
+        //   }
+        // }, 10000);
+      })();
+      // efek daun
+      const leafWrapper = document.getElementById('leaf-wrapper');
+
+      function createLeaf() {
+        const leaf = document.createElement('div');
+        leaf.classList.add('leaf');
+        // Ukuran acak
+        const size = 10 + Math.random() * 5;
+        leaf.style.width = size + 'px';
+        leaf.style.height = size + 'px';
+        // Posisi horizontal acak
+        leaf.style.left = Math.random() * 100 + 'vw';
+        // Posisi awal di atas viewport
+        leaf.style.top = '0px';
+        // Durasi animasi acak
+        const duration = 6 + Math.random() * 5;
+        leaf.style.animation = `fall3D ${duration}s linear forwards`;
+        leafWrapper.appendChild(leaf);
+        // Hapus daun setelah animasi selesai
+        setTimeout(() => leaf.remove(), duration * 1000);
+      }
+      // Generate daun tiap 0.3 detik secara acak
+      setInterval(() => {
+        if (Math.random() > 0.4) createLeaf();
+      }, 300);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,257 @@
+/* ===============================
+   GLOBAL CSS
+=============================== */
+:root {
+  /* Warna utama */
+  --primary: #003b00;      /* hijau islami */
+  --secondary: #9b6f00; 
+}
+
+/* section{visibility: hidden;opacity: 0;} */
+.primary{color: var(--primary);}
+.secondary{color: var(--secondary);}
+.primary-dark{color: var(--primary-dark);}
+.primary-light{color: var(--primary-light);}
+.gold-dark{color: var(--gold-dark);}
+.gold-light{color: var(--gold-light);}
+.abu{color: #5c5c5c;}
+.font-besar{font-size: 16px;}
+.font-sedang{font-size: 14px;}
+.font-normal{font-size: 12px;}
+.font-kecil{font-size: 10px;}
+.bayangan{text-shadow: 2px 2px 6px rgba(0,0,0,0.4);}
+.bayangan-putih{text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.4);}
+.poppins{font-family: 'Poppins', sans-serif;}
+.standar{font-family: 'Merriweather', serif;}
+.alan{font-family: 'Alan Sans', serif;}
+.latin{font-family: 'Great Vibes', cursive;}
+.amiri{font-family: 'amiri', cursive;}
+.foto-icon{width: 35px;height: 35px;margin-left: -13px;border-radius: 50%;}
+.container-section-overflow{max-height: 70vh;overflow-y: scroll;overflow-x: hidden;}
+.hr{max-width: 60%;margin: 1rem auto;}
+/* Hijau muda */
+.bg-ijo-subtle {
+  background-color: #f6fff8;       /* hijau tua buat icon */
+}
+
+/* Merah muda */
+.bg-merah-subtle {
+  background-color: #fff5f5;
+}
+
+/* Biru muda */
+.bg-biru-subtle {
+  background-color: #f6fbff;
+}
+
+/* Abu muda */
+.bg-abu-subtle {
+  background-color: #f3f3f3;
+}
+/* ============================== */
+.floating {
+  animation: floating 4s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-12px); }
+  100% { transform: translateY(0); }
+}
+/* ============================== */
+.container-blur {
+  background: rgba(255, 255, 255, 0.4); /* semi transparan */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+/* ============================== */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4); /* hitam transparan */
+  color: #f8e9b0; /* emas lembut */
+  font-family: 'Scheherazade New', serif; /* nuansa arabic elegan */
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.5); /* garis emas tipis */
+}
+
+.marquee span {
+  display: inline-block;
+  padding-left: 100%; /* mulai dari luar layar */
+  white-space: nowrap;
+  animation: marqueeScroll 18s linear infinite;
+}
+
+/* Animasi scroll */
+@keyframes marqueeScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+
+/* ===============================
+   COVER SECTION
+=============================== */
+          .acara-table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          .acara-table td {
+            vertical-align: top; 
+          }
+          .acara-table td:first-child {
+            width: 100px;        /* kolom label */
+            white-space: nowrap; /* biar ga turun */
+          }
+          .acara-table td.colon {
+            width: 20px;         /* kolom titik dua */
+            text-align: center;
+            white-space: nowrap;
+          }
+          .acara-table td:last-child {
+            width: auto;         /* kolom isi fleksibel */
+            text-align: left;
+          }
+
+          /* 📱 Responsive di layar kecil */
+          @media (max-width: 480px) {
+            .acara-table td:first-child {
+              width: auto; 
+            }
+            .acara-table td:last-child {
+              display: block;
+            }
+          }
+/* ===============================
+   INFAQ SECTION
+=============================== */
+.potorek{width: auto;height: 20px;margin-bottom: 0.5rem;}
+
+
+.reply{
+  background: white;
+  border-left: 3px solid var(--primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 5px;
+  display: inline-block;
+  width: 100%;
+}
+.reply p{
+
+  margin: 0;
+}
+  .count-box {
+    min-width: 60px;
+    padding: 10px 7px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .count-number {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .count-label {
+    font-size: 9px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+    #galeri h2 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+  }
+
+  .gallery-thumb {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .gallery-thumb:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  }
+
+  #lightboxImage {
+    max-height: 75vh;
+    object-fit: contain;
+  }
+  .modal-content button {
+    font-weight: 500;
+  }
+  #lighboxModal i {color: #000;}
+
+  /* Container list emoji */
+.emoji-list {
+  display: none;
+  gap: 6px;
+  margin-top: 5px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.25s ease-in-out;
+}
+
+/* Saat aktif */
+.emoji-list.show {
+  display: flex;
+  opacity: 1;
+  transform: scale(1);
+  justify-content: center;
+}
+
+/* Emoji item */
+.emoji {
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.emoji:hover {
+  transform: scale(1.3) rotate(10deg);
+}
+
+/* Counter */
+.reaction-counts {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  gap: 5px;
+}
+
+
+    /* Posisi tombol */
+    #musicBtn {
+      position: fixed;
+      bottom: 150px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 27px;         /* ukuran ikon */
+      line-height: 1;          /* biar nggak ada spasi aneh */
+      display: inline-block;   /* wajib supaya transform-origin jalan */
+      transform-origin: center center; /* muter dari tengah */
+      z-index: 50;
+      opacity: .5;
+      color: var(--primary);
+      display: none;
+    }
+
+    /* Animasi spin */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .spin {
+      animation: spin 2s linear infinite;
+    }
